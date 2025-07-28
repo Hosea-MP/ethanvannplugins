@@ -230,4 +230,39 @@ public class NPCQuery {
         }
         return Optional.ofNullable(npcMap.get(path.get(path.size() - 1)));
     }
+
+    /**
+     * Returns the furthest reachable NPC from the local player.
+     * <p>
+     * This is determined by calculating the shortest path to each NPC and
+     * selecting the one with the longest path length. Unreachable NPCs are
+     * ignored.
+     */
+    public Optional<NPC> furthestByPath()
+    {
+        NPC furthest = null;
+        int longest = -1;
+
+        for (NPC npc : npcs)
+        {
+            HashSet<WorldPoint> goalSet = new HashSet<>();
+            goalSet.addAll(npc.getWorldArea().toWorldPointList());
+            goalSet.addAll(WorldAreaUtility.objectInteractableTiles(npc));
+
+            List<WorldPoint> path = EthanApiPlugin.pathToGoalSetFromPlayerNoCustomTiles(goalSet);
+            if (path == null)
+            {
+                continue;
+            }
+
+            int length = path.size();
+            if (length > longest)
+            {
+                longest = length;
+                furthest = npc;
+            }
+        }
+
+        return Optional.ofNullable(furthest);
+    }
 }
